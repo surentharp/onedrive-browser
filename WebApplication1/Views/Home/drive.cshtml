@@ -1,0 +1,128 @@
+﻿@model List<string>
+
+@{
+    ViewBag.Title = "drive";
+}
+
+<div class="header">
+    <h2>drive</h2>
+    <img id="loading" src="/Content/Images/ajax-loader.gif" alt="logo" />
+</div>
+
+<div class="row" style="max-height:400px;height:400px;">
+
+    <div class="col-md-4" style="max-height:350px;height:350px;">
+        <div id="tree"></div>
+    </div>
+    <div class="col-md-8" style="max-height:350px;height:350px;">
+
+        <div id="empList">
+
+        </div>
+    </div>
+</div>
+
+
+@section styles {
+    <style>
+
+        .header {
+            height: 100px;
+            margin-top: 5px;
+        }
+
+            .header img {
+                margin-top: 10px;
+                width: 40px;
+                height: 40px;
+            }
+
+            .header h2 {
+                float: left;
+                position: relative;
+            }
+
+        #empList {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        #tree {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        #empList::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+            border-radius: 10px;
+            background-color: #F5F5F5;
+        }
+
+        #empList::-webkit-scrollbar {
+            width: 12px;
+            background-color: #F5F5F5;
+        }
+
+        #empList::-webkit-scrollbar-thumb {
+            border-radius: 10px;
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+            background-color: #555;
+        }
+
+        #tree::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+            border-radius: 10px;
+            background-color: #F5F5F5;
+        }
+
+        #tree::-webkit-scrollbar {
+            width: 12px;
+            background-color: #F5F5F5;
+        }
+
+        #tree::-webkit-scrollbar-thumb {
+            border-radius: 10px;
+            -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+            background-color: #555;
+        }
+    </style>
+}
+
+@section scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#loading").show();
+            var tree, onSuccessFunc, onErrorFunc;
+            onSuccessFunc = function (response) {
+                $("#loading").hide();
+                tree.render(response);
+            };
+            onErrorFunc = function (response) {
+                $("#loading").hide();
+            };
+            tree = $('#tree').tree({
+                primaryKey: 'id',
+                dataSource: { url: '/Home/GetFolders', success: onSuccessFunc, error: onErrorFunc }
+            });
+            tree.on('select', function (e, node, id) {
+                $("#loading").show();
+                $.ajax({
+                    url: "/Home/GetAllFiles",
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    type: "get",
+                    data: { id: id },
+                    success: function (result) {
+                        $("#loading").hide();
+                        $("#empList").html(result);
+                        
+                    },
+                    error: function (xhr) {
+                        $("#loading").hide();
+                    }
+                });
+            });
+        });
+    </script>
+}
